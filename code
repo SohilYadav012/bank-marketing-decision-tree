@@ -1,0 +1,56 @@
+# task3.py
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import accuracy_score, classification_report
+import os
+
+# Create folder to save plots
+os.makedirs("output_charts", exist_ok=True)
+
+# Load the Bank Marketing dataset
+df = pd.read_csv("bank.csv", sep=';')  # The file is semicolon-separated
+
+# Encode the target variable ('y')
+label_encoder = LabelEncoder()
+df['y'] = label_encoder.fit_transform(df['y'])  # yes -> 1, no -> 0
+
+# Encode categorical features using one-hot encoding
+df_encoded = pd.get_dummies(df.drop('y', axis=1))
+
+# Separate features and target
+X = df_encoded
+y = df['y']
+
+# Split the data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train a Decision Tree Classifier
+clf = DecisionTreeClassifier(random_state=42)
+clf.fit(X_train, y_train)
+
+# Predict on test set
+y_pred = clf.predict(X_test)
+
+# Evaluation metrics
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+# Visualize the Decision Tree
+plt.figure(figsize=(20, 10))
+plot_tree(clf, filled=True, feature_names=X.columns, class_names=["No", "Yes"], fontsize=6)
+plt.title("Decision Tree for Bank Marketing Dataset")
+
+# Save and show plot
+output_path = "output_charts/decision_tree.png"
+plt.savefig(output_path, dpi=300)
+plt.show()
+
+# Open the image (only if it was saved successfully)
+if os.path.exists(output_path):
+    os.startfile(output_path)
+else:
+    print("❌ Image file was not found.")
